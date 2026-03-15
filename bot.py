@@ -123,15 +123,12 @@ async def sleep_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def now_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     now = datetime.now()
 
-    # cộng thêm 15 phút để ngủ thiếp
-    fall_asleep = now + timedelta(minutes=15)
-
-    cycles = [4, 5, 6]
+    cycles = [6, 5, 4]
 
     msg = "😴 Nếu ngủ ngay bây giờ, bạn nên dậy lúc:\n\n"
 
     for c in cycles:
-        wake = fall_asleep + timedelta(minutes=90 * c)
+        wake = now + timedelta(minutes=(90 * c))
         msg += f"⏰ {wake.strftime('%H:%M')} ({c} chu kỳ)\n"
 
     await update.message.reply_text(msg)

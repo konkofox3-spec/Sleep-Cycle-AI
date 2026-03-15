@@ -99,8 +99,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• tôi muốn dậy lúc 7:30\n"
         "• mai dậy 6h\n"
         "• wake up 08:15\n\n"
-        "4️⃣ Nếu ngủ ngay bây giờ:\n"
-        "`/now`"
+        
     )
 
     await update.message.reply_text(msg, parse_mode="Markdown")

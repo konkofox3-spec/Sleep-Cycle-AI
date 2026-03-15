@@ -26,7 +26,12 @@ def calculate_sleep_times(wake_time):
 
 
 def format_sleep_message(wake_time):
-    results = calculate_sleep_times(wake_time)
+    cycles = [6, 5, 4]
+    results = []
+
+    for c in cycles:
+        sleep_time = wake_time - timedelta(minutes=(90 * c + 15))
+        results.append((sleep_time.strftime("%H:%M"), c))
 
     msg = f"⏰ Nếu bạn muốn dậy lúc {wake_time.strftime('%H:%M')}, bạn nên đi ngủ vào:\n\n"
 
@@ -38,7 +43,15 @@ def format_sleep_message(wake_time):
         else:
             msg += f"🛌 {time} → 4 chu kỳ (6h)\n"
 
-    msg += "\n⏳ Hãy lên giường sớm hơn khoảng 15 phút để có thời gian ngủ thiếp đi."
+    msg += "\n⏳ Hãy lên giường sớm hơn khoảng 15 phút để có thời gian ngủ thiếp đi.\n"
+
+    # Nếu ngủ dưới 7 tiếng (4 chu kỳ)
+    msg += (
+        "\n💡 Nếu bạn chỉ ngủ khoảng 6 tiếng:\n"
+        "• Ngủ trưa 15–25 phút vào khoảng 12h–14h\n"
+        "• Tránh ngủ trưa quá 30 phút\n"
+        "• Có thể thử coffee nap ☕ (uống cà phê rồi ngủ 20 phút)"
+    )
 
     return msg
 

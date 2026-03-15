@@ -48,6 +48,17 @@ def detect_sleep(text):
     return False
 
 
+def detect_wake(text):
+
+    keywords = ["dậy", "wake", "thức"]
+
+    for k in keywords:
+        if k in text.lower():
+            return True
+
+    return False
+
+
 # -------- CALCULATE --------
 
 def calculate_sleep_times(wake_time):
@@ -104,7 +115,6 @@ def format_sleep_message(wake_time):
     bed_time = wake_time - timedelta(minutes=15)
 
     msg += f"\n🛏 Lên giường khoảng {bed_time.strftime('%H:%M')}"
-
     msg += "\n(vì cần ~15 phút để ngủ thiếp)"
 
     msg += (
@@ -193,7 +203,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     time_obj = datetime.now().replace(hour=hour, minute=minute, second=0)
 
-    # nếu user viết "ngủ"
+    # nếu user nói ngủ
     if detect_sleep(text):
 
         msg = format_wake_message(time_obj)
@@ -202,6 +212,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         return
 
+    # nếu user nói dậy
+    if detect_wake(text):
+
+        msg = format_sleep_message(time_obj)
+
+        await update.message.reply_text(msg)
+
+        return
+
+    # nếu mơ hồ thì dùng button
     context.user_data["time_input"] = (hour, minute)
 
     keyboard = [

@@ -120,19 +120,6 @@ async def sleep_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Giờ không hợp lệ. Ví dụ: /sleep 07:30")
 
 
-async def now_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    now = datetime.now()
-
-    cycles = [6, 5, 4]
-
-    msg = "😴 Nếu ngủ ngay bây giờ, bạn nên dậy lúc:\n\n"
-
-    for c in cycles:
-        wake = now + timedelta(minutes=(90 * c))
-        msg += f"⏰ {wake.strftime('%H:%M')} ({c} chu kỳ)\n"
-
-    await update.message.reply_text(msg)
-
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
@@ -158,7 +145,7 @@ app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help_command))
 app.add_handler(CommandHandler("sleep", sleep_command))
-app.add_handler(CommandHandler("now", now_command))
+
 
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 

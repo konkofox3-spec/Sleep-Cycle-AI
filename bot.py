@@ -112,11 +112,6 @@ def format_sleep_message(wake_time):
         else:
             msg += f"🛌 {time} → 6h (4 chu kỳ)\n"
 
-    bed_time = wake_time - timedelta(minutes=15)
-
-    msg += f"\n🛏 Lên giường khoảng {bed_time.strftime('%H:%M')}"
-    msg += "\n(vì cần ~15 phút để ngủ thiếp)"
-
     msg += (
         "\n\n💡 Nếu ngủ khoảng 6h:\n"
         "• Ngủ trưa 15–25 phút (12h–14h)\n"
@@ -144,7 +139,10 @@ def format_wake_message(sleep_time):
         else:
             msg += f"⏰ {time} → 6h (4 chu kỳ)\n"
 
-    msg += "\n⏳ Đã tính ~15 phút để ngủ thiếp."
+    bed_time = sleep_time - timedelta(minutes=15)
+
+    msg += f"\n🛏 Bạn nên lên giường khoảng {bed_time.strftime('%H:%M')}"
+    msg += "\n(vì cần ~15 phút để ngủ thiếp)"
 
     return msg
 

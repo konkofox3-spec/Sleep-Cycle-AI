@@ -20,28 +20,40 @@ from telegram.ext import (
 TOKEN = os.environ["BOT_TOKEN"]
 
 
-# --------- TIME EXTRACTION ---------
+# -------- TIME EXTRACT --------
 
 def extract_time(text):
 
-    text = text.lower()
-
     match = re.search(r"(\d{1,2}):(\d{2})", text)
+
     if match:
         return int(match.group(1)), int(match.group(2))
 
     match = re.search(r"(\d{1,2})\s*h", text)
+
     if match:
         return int(match.group(1)), 0
 
     return None
 
 
-# --------- CALCULATE SLEEP ---------
+def detect_sleep(text):
+
+    keywords = ["ngủ", "sleep", "bed"]
+
+    for k in keywords:
+        if k in text.lower():
+            return True
+
+    return False
+
+
+# -------- CALCULATE --------
 
 def calculate_sleep_times(wake_time):
 
     cycles = [6, 5, 4]
+
     results = []
 
     for c in cycles:
@@ -56,9 +68,10 @@ def calculate_sleep_times(wake_time):
 def calculate_wake_times(sleep_time):
 
     cycles = [4, 5, 6]
-    results = []
 
     sleep_start = sleep_time + timedelta(minutes=15)
+
+    results = []
 
     for c in cycles:
 
@@ -69,35 +82,36 @@ def calculate_wake_times(sleep_time):
     return results
 
 
-# --------- FORMAT MESSAGE ---------
+# -------- FORMAT MESSAGE --------
 
 def format_sleep_message(wake_time):
 
     results = calculate_sleep_times(wake_time)
 
-    msg = f"⏰ Nếu bạn muốn dậy lúc {wake_time.strftime('%H:%M')}, bạn nên đi ngủ vào:\n\n"
+    msg = f"🌅 Nếu bạn muốn dậy lúc {wake_time.strftime('%H:%M')}, bạn nên ngủ:\n\n"
 
     for time, cycle in results:
 
         if cycle == 6:
-            msg += f"🛌 {time} → 6 chu kỳ (9h) — tốt nhất\n"
+            msg += f"🛌 {time} → 9h (6 chu kỳ) ⭐ tốt nhất\n"
 
         elif cycle == 5:
-            msg += f"🛌 {time} → 5 chu kỳ (7.5h)\n"
+            msg += f"🛌 {time} → 7.5h (5 chu kỳ)\n"
 
         else:
-            msg += f"🛌 {time} → 4 chu kỳ (6h)\n"
+            msg += f"🛌 {time} → 6h (4 chu kỳ)\n"
 
     bed_time = wake_time - timedelta(minutes=15)
 
-    msg += f"\n🛏 Nên lên giường lúc khoảng {bed_time.strftime('%H:%M')}"
-    msg += "\n(vì cơ thể cần ~15 phút để ngủ thiếp)"
+    msg += f"\n🛏 Lên giường khoảng {bed_time.strftime('%H:%M')}"
+
+    msg += "\n(vì cần ~15 phút để ngủ thiếp)"
 
     msg += (
-        "\n\n💡 Nếu bạn chỉ ngủ khoảng 6 tiếng:\n"
-        "• Ngủ trưa 15–25 phút vào khoảng 12h–14h\n"
-        "• Tránh ngủ trưa quá 30 phút\n"
-        "• Có thể thử coffee nap ☕"
+        "\n\n💡 Nếu ngủ khoảng 6h:\n"
+        "• Ngủ trưa 15–25 phút (12h–14h)\n"
+        "• Không ngủ quá 30 phút\n"
+        "• Coffee nap ☕ có thể giúp tỉnh táo"
     )
 
     return msg
@@ -107,42 +121,36 @@ def format_wake_message(sleep_time):
 
     results = calculate_wake_times(sleep_time)
 
-    msg = f"🛌 Nếu bạn ngủ lúc {sleep_time.strftime('%H:%M')}, bạn nên dậy lúc:\n\n"
+    msg = f"🌙 Nếu bạn ngủ lúc {sleep_time.strftime('%H:%M')}, bạn nên dậy:\n\n"
 
     for time, cycle in results:
 
         if cycle == 6:
-            msg += f"⏰ {time} → 6 chu kỳ (9h) — ngủ sâu\n"
+            msg += f"⏰ {time} → 9h (6 chu kỳ) ⭐ ngủ sâu\n"
 
         elif cycle == 5:
-            msg += f"⏰ {time} → 5 chu kỳ (7.5h)\n"
+            msg += f"⏰ {time} → 7.5h (5 chu kỳ)\n"
 
         else:
-            msg += f"⏰ {time} → 4 chu kỳ (6h)\n"
+            msg += f"⏰ {time} → 6h (4 chu kỳ)\n"
 
-    msg += "\n⏳ Đã tính thêm ~15 phút để ngủ thiếp."
+    msg += "\n⏳ Đã tính ~15 phút để ngủ thiếp."
 
     return msg
 
 
-# --------- COMMANDS ---------
+# -------- COMMANDS --------
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     msg = (
         "😴 *Sleep Cycle AI*\n\n"
-        "Tôi giúp bạn tối ưu thời gian ngủ.\n\n"
-        "Bạn có thể:\n"
-        "• Gửi giờ như `07:30`\n"
-        "• Hoặc nói tự nhiên:\n"
-        "  - tôi muốn dậy lúc 7:30\n"
-        "  - mai dậy 6h\n"
-        "  - ngủ lúc 23:30\n\n"
-        "Bot sẽ hỏi đó là:\n"
-        "🌅 giờ thức dậy hay 🌙 giờ đi ngủ\n\n"
-        "Commands:\n"
-        "/sleep 07:30\n"
-        "/help"
+        "Gửi giờ như:\n"
+        "`07:30`\n\n"
+        "Hoặc nói tự nhiên:\n"
+        "• tôi muốn dậy 7:30\n"
+        "• ngủ lúc 23:30\n\n"
+        "Bot sẽ tính chu kỳ ngủ tối ưu."
     )
 
     await update.message.reply_text(msg, parse_mode="Markdown")
@@ -151,41 +159,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     msg = (
-        "📘 *Hướng dẫn*\n\n"
-        "1️⃣ Gửi giờ:\n"
+        "📘 *Cách dùng*\n\n"
+        "1️⃣ Gửi giờ\n"
         "`07:30`\n\n"
         "2️⃣ Bot sẽ hỏi:\n"
-        "🌅 giờ thức dậy\n"
-        "🌙 giờ đi ngủ\n\n"
-        "3️⃣ Hoặc dùng:\n"
-        "`/sleep 07:30`"
+        "🌙 ngủ hay 🌅 dậy\n\n"
+        "3️⃣ Ví dụ:\n"
+        "`ngủ 23:30`\n"
+        "`dậy 7:30`"
     )
 
     await update.message.reply_text(msg, parse_mode="Markdown")
 
 
-async def sleep_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    if not context.args:
-
-        await update.message.reply_text("Ví dụ: /sleep 07:30")
-
-        return
-
-    try:
-
-        wake = datetime.strptime(context.args[0], "%H:%M")
-
-        msg = format_sleep_message(wake)
-
-        await update.message.reply_text(msg)
-
-    except:
-
-        await update.message.reply_text("Giờ không hợp lệ. Ví dụ: /sleep 07:30")
-
-
-# --------- HANDLE MESSAGE ---------
+# -------- MESSAGE --------
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -196,7 +183,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not time_data:
 
         await update.message.reply_text(
-            "❓ Tôi không hiểu.\n\nGửi giờ như `07:30` hoặc dùng `/help`.",
+            "❓ Gửi giờ như `07:30`",
             parse_mode="Markdown"
         )
 
@@ -204,25 +191,35 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     hour, minute = time_data
 
+    time_obj = datetime.now().replace(hour=hour, minute=minute, second=0)
+
+    # nếu user viết "ngủ"
+    if detect_sleep(text):
+
+        msg = format_wake_message(time_obj)
+
+        await update.message.reply_text(msg)
+
+        return
+
     context.user_data["time_input"] = (hour, minute)
 
     keyboard = [
         [
-            InlineKeyboardButton("🌅 Giờ thức dậy", callback_data="wake"),
-            InlineKeyboardButton("🌙 Giờ đi ngủ", callback_data="sleep"),
+            InlineKeyboardButton("🌙 Ngủ", callback_data="sleep"),
+            InlineKeyboardButton("🌅 Dậy", callback_data="wake"),
         ]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        f"⏰ *{hour:02d}:{minute:02d}* là:",
-        reply_markup=reply_markup,
-        parse_mode="Markdown"
+        f"⏰ {hour:02d}:{minute:02d} là:",
+        reply_markup=reply_markup
     )
 
 
-# --------- BUTTON HANDLER ---------
+# -------- BUTTON --------
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -245,13 +242,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text(msg)
 
 
-# --------- APP ---------
+# -------- APP --------
 
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help_command))
-app.add_handler(CommandHandler("sleep", sleep_command))
 
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
